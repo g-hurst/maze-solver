@@ -28,6 +28,7 @@ def printPretty(mz):
             elif point == SpaceType.WALL:    print('#', end='')
             elif point == SpaceType.VISITED: print('o', end='')
         print('')
+    print('')
   
 class Node:
     def __init__(self, value, child=None, parent=None):
@@ -58,39 +59,57 @@ def find_neighbors(node, maze):
         elif p[1] < 0 or p[1] > yMax - 1:                    points.remove(p)
         elif maze[p[0]][p[1]] == SpaceType.WALL:             points.remove(p)
         elif node.parent != None and p == node.parent.value: points.remove(p)
-    return points
+    return set(points)
 
 def find_start(mz):
     for i in range(len(mz)):
         if mz[i][0] == SpaceType.PATH:
             return (i, 0)        
 
-def dfs(node, mz, visited=None):  
+def walk(node, mz, visited=None):  
     if visited == None:
         visited = set()
     visited.add(node.value)
-    for point in find_neighbors(node, mz):
+    points = find_neighbors(node, mz) - visited
+    if len(points) != 0:
+        point = points.pop()
         next_node = Node(point, parent=node)
         node.set_child(next_node)
-        # if next_node.value[1] == len(mz[0]) - 1:
-        #    return True
-        dfs(next_node, mz, visited)
+        return walk(next_node, mz, visited)
+    else:
+        return node
+
+def backtrack(node, mz, visited, first_node=None):
+    if first_node == None:
+        first_node = node
+    if len(find_neighbors(node, mz) - visited) == 0:
+        next_node = Node(first_node.parent.value, parent=node)
+        return backtrack(next_node, mz, visited, first_node.parent)
+    else:
+        return node
+
+def find_path(node, mz):
+    visited = set()
+    tracking_node = walk(node, mz, visited)
+    while tracking_node.value[1] != len(mz[0]) - 1:
+        tracking_node = backtrack(tracking_node, mz, visited)
+        tracking_node = walk(tracking_node, mz, visited)
+    
     return visited
     
 if __name__ == '__main__':
     maze_paths = ['mazes\maze0.txt', 'mazes\maze1.txt', 'mazes\maze2.txt', 'mazes\maze3.txt', 'mazes\maze4.txt']
-    # for path in maze_paths:
-    #     maze = get_maze(path)
-    #     printPretty(maze)
-    #     print()
-    maze = get_maze(maze_paths[0])
 
-    printPretty(maze)
-    
-    first_node = Node(find_start(maze), maze)
-    visits = dfs(first_node, maze)
+    for path in maze_paths:
+        maze = get_maze(path)
 
-    for p in visits:
-        maze[p[0]][p[1]] = SpaceType.VISITED
-    
-    printPretty(maze)
+        print(path)
+        printPretty(maze)
+
+        first_node = Node(find_start(maze), maze)
+        visits = find_path(first_node, maze)
+
+        for p in visits:
+            maze[p[0]][p[1]] = SpaceType.VISITED
+        
+        printPretty(maze)

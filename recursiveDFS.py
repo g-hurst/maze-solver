@@ -72,8 +72,6 @@ def dfs(node, mz, visited=None):
     for point in find_neighbors(node, mz):
         next_node = Node(point, parent=node)
         node.set_child(next_node)
-        # if next_node.value[1] == len(mz[0]) - 1:
-        #    return True
         dfs(next_node, mz, visited)
     return visited
     
