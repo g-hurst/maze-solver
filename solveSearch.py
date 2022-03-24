@@ -32,13 +32,14 @@ def printPretty(mz):
   
 class Node:
     def __init__(self, value, child=None, parent=None):
-        self.child   = child
+        self.child   = []
+        self.child.append(child)
         self.value   = value
         self.parent  = parent
     
     # setters
-    def set_child(self, child):
-        self.child = child
+    def add_child(self, child):
+        self.child.append(child)
     def set_parent(self, parent):
         self.parent = parent
         
@@ -74,28 +75,34 @@ def walk(node, mz, visited=None):
     if len(points) != 0:
         point = points.pop()
         next_node = Node(point, parent=node)
-        node.set_child(next_node)
+        node.add_child(next_node)
         return walk(next_node, mz, visited)
     else:
         return node
 
 def backtrack(node, mz, visited, first_node=None):
-    if first_node == None:
-        first_node = node
-    if len(find_neighbors(node, mz) - visited) == 0:
-        next_node = Node(first_node.parent.value, parent=node)
-        return backtrack(next_node, mz, visited, first_node.parent)
-    else:
-        return node
+    while len(find_neighbors(node, mz) - visited) == 0:
+        node = node.parent
+    return node
+
 
 def find_path(node, mz):
     visited = set()
+    best_path = set()
     tracking_node = walk(node, mz, visited)
     while tracking_node.value[1] != len(mz[0]) - 1:
         tracking_node = backtrack(tracking_node, mz, visited)
         tracking_node = walk(tracking_node, mz, visited)
     
-    return visited
+    
+    while tracking_node.parent != None:
+        best_path.add(tracking_node.value)
+        tracking_node = tracking_node.parent
+
+
+    print(visited - best_path)
+
+    return best_path
     
 if __name__ == '__main__':
     maze_paths = ['mazes\maze0.txt', 'mazes\maze1.txt', 'mazes\maze2.txt', 'mazes\maze3.txt', 'mazes\maze4.txt']
