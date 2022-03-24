@@ -51,56 +51,53 @@ class Node:
     def get_value(self):
         return self.value
     
-
-def find_neighbors(node, maze):
-    points = [(node.value[0] + x, node.value[1] + y) for x, y in [(1,0), (0,1), (-1,0), (0,-1)]]
-    xMax, yMax = np.shape(maze)
-    for p in copy.copy(points):
-        if   p[0] < 0 or p[0] > xMax - 1:                    points.remove(p)
-        elif p[1] < 0 or p[1] > yMax - 1:                    points.remove(p)
-        elif maze[p[0]][p[1]] == SpaceType.WALL:             points.remove(p)
-        elif node.parent != None and p == node.parent.value: points.remove(p)
-    return set(points)
-
+# finds the starting point of the maze
 def find_start(mz):
     for i in range(len(mz)):
         if mz[i][0] == SpaceType.PATH:
             return (i, 0)        
 
-def walk(node, mz, visited=None):  
-    if visited == None:
-        visited = set()
-    visited.add(node.value)
-    points = find_neighbors(node, mz) - visited
-    if len(points) != 0:
-        point = points.pop()
-        next_node = Node(point, parent=node)
-        node.add_child(next_node)
-        return walk(next_node, mz, visited)
-    else:
-        return node
-
-def backtrack(node, mz, visited, first_node=None):
-    while len(find_neighbors(node, mz) - visited) == 0:
-        node = node.parent
-    return node
-
-
 def find_path(node, mz):
+    # function that returns the open spaces next to the node
+    def find_neighbors(node, maze):
+        points = [(node.value[0] + x, node.value[1] + y) for x, y in [(1,0), (0,1), (-1,0), (0,-1)]]
+        xMax, yMax = np.shape(maze)
+        for p in copy.copy(points):
+            if   p[0] < 0 or p[0] > xMax - 1:                    points.remove(p)
+            elif p[1] < 0 or p[1] > yMax - 1:                    points.remove(p)
+            elif maze[p[0]][p[1]] == SpaceType.WALL:             points.remove(p)
+            elif node.parent != None and p == node.parent.value: points.remove(p)
+        return set(points)
+    
+    # function that walks through the maze until a dead end is reached
+    def walk(node, mz, visited=None):  
+        if visited == None:
+            visited = set()
+        visited.add(node.value)
+        points = find_neighbors(node, mz) - visited
+        if len(points) != 0:
+            point = points.pop()
+            next_node = Node(point, parent=node)
+            node.add_child(next_node)
+            return walk(next_node, mz, visited)
+        else:
+            return node
+
     visited = set()
     best_path = set()
+
+    # solves the maze and creates a tree of nodes with the root node as the entrance
     tracking_node = walk(node, mz, visited)
     while tracking_node.value[1] != len(mz[0]) - 1:
-        tracking_node = backtrack(tracking_node, mz, visited)
+        #backtraces unitl the next path is found
+        while len(find_neighbors(tracking_node, mz) - visited) == 0:
+            tracking_node = tracking_node.parent        
         tracking_node = walk(tracking_node, mz, visited)
     
-    
+    # gets the optimal path
     while tracking_node.parent != None:
         best_path.add(tracking_node.value)
         tracking_node = tracking_node.parent
-
-
-    print(visited - best_path)
 
     return best_path
     
@@ -113,10 +110,10 @@ if __name__ == '__main__':
         print(path)
         printPretty(maze)
 
-        first_node = Node(find_start(maze), maze)
-        visits = find_path(first_node, maze)
+        root_node = Node(find_start(maze), maze)
+        best_path = find_path(root_node, maze)
 
-        for p in visits:
+        for p in best_path:
             maze[p[0]][p[1]] = SpaceType.VISITED
         
         printPretty(maze)
