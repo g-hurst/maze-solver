@@ -110,7 +110,7 @@ if __name__ == '__main__':
         print(path)
         printPretty(maze)
 
-        root_node = Node(find_start(maze), maze)
+        root_node = Node(find_start(maze))
         best_path = find_path(root_node, maze)
 
         for p in best_path:
