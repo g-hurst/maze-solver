@@ -10,6 +10,6 @@ This project was created to model the way a person would solve a maze. No, the a
 ### ALgorithm
 This algorithm is a modified version of a depth first search. Instead of backtracking recersivly to traverse a new path, the backtracking is hard coded into the algorithm. This was done in order to model how a physical object would traverse a maze.
 1. walk unitl a dead end is reached
-2. if the dead end is the exit stop
+2. if the dead end is the exit, stop
 3. else backtrack to the first branch that has not yet been traversed
 4. return to `step 1`
